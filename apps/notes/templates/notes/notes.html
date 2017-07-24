@@ -1,25 +1,16 @@
 {% for note in notes %}
 <div class="note">
     <h3>{{ note.title }}</h3>
-    <p><a href={% url 'notes:delete' id=note.id %}>delete</a></p>
-    <form action="" method="POST" id="form_desc">
+    <p>
+        <form>
+            {% csrf_token %}
+            <a href="" class="delete" note_id={{ note.id }}>delete</a>
+        </form>
+    </p>
+    <form>
         {% csrf_token %}
         <textarea name="description" rows="5" cols="20" placeholder="Enter description here..." note_id={{ note.id }}>{{ note.description }}</textarea>
     </form>
     <hr>
 </div>
 {% endfor %}
-
-<script>
-    $('textarea').focusout(function() {
-        console.log('focus out');
-        $.ajax({
-            url: '/save/' + $(this).attr('note_id'),
-            method: 'POST',
-            data: $(this).parent().serialize(),
-            success: function(res) {
-                $('.notes').html(res);
-            }
-        });
-    });
-</script>

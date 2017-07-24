@@ -13,7 +13,12 @@
             {% for note in notes %}
             <div class="note">
                 <h3>{{ note.title }}</h3>
-                <p><a href={% url 'notes:delete' id=note.id %}>delete</a></p>
+                <p>
+                    <form>
+                        {% csrf_token %}
+                        <a href="" class="delete" note_id={{ note.id }}>delete</a>
+                    </form>
+                </p>
                 <form>
                     {% csrf_token %}
                     <textarea name="description" rows="5" cols="20" placeholder="Enter description here..." note_id={{ note.id }}>{{ note.description }}</textarea>
@@ -23,22 +28,50 @@
             {% endfor %}
         </div>
         <br>
-        <form action={% url 'notes:add' %} method="POST" id="form_new">
+        <form id="form_new">
             {% csrf_token %}
-            <input type="text" name="title" placeholder="Insert note title here...">
+            <input type="text" name="title" placeholder="Insert note title here..." id="new_title">
             <br><br>
             <input type="submit" value="Add Note">
         </form>
 
         <script>
-            $('textarea').focusout(function() {
-                console.log('focus out');
+            function showAllNotes(res) {
+                $('.notes').html(res);
+            }
+
+            $('#form_new').submit(function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: '/add',
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function(res) {
+                        showAllNotes(res);
+                    }
+                });
+                $("#new_title").val('');
+            });
+
+            $(document).on("focusout", "textarea", function() {
                 $.ajax({
                     url: '/save/' + $(this).attr('note_id'),
                     method: 'POST',
                     data: $(this).parent().serialize(),
                     success: function(res) {
-                        $('.notes').html(res);
+                        $(this).val(res);
+                    }
+                });
+            });
+
+            $(document).on("click", ".delete", function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: '/delete/' + $(this).attr('note_id'),
+                    method: 'POST',
+                    data: $(this).parent().serialize(),
+                    success: function(res) {
+                        showAllNotes(res);
                     }
                 });
             });
