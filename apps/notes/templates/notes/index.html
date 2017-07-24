@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Notes</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    </head>
+    <body>
+        <h1>Notes</h1>
+        <hr>
+        <div class="notes">
+            {% for note in notes %}
+            <div class="note">
+                <h3>{{ note.title }}</h3>
+                <p><a href={% url 'notes:delete' id=note.id %}>delete</a></p>
+                <form>
+                    {% csrf_token %}
+                    <textarea name="description" rows="5" cols="20" placeholder="Enter description here..." note_id={{ note.id }}>{{ note.description }}</textarea>
+                </form>
+                <hr>
+            </div>
+            {% endfor %}
+        </div>
+        <br>
+        <form action={% url 'notes:add' %} method="POST" id="form_new">
+            {% csrf_token %}
+            <input type="text" name="title" placeholder="Insert note title here...">
+            <br><br>
+            <input type="submit" value="Add Note">
+        </form>
+
+        <script>
+            $('textarea').focusout(function() {
+                console.log('focus out');
+                $.ajax({
+                    url: '/save/' + $(this).attr('note_id'),
+                    method: 'POST',
+                    data: $(this).parent().serialize(),
+                    success: function(res) {
+                        $('.notes').html(res);
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>
